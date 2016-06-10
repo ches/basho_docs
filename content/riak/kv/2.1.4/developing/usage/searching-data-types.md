@@ -665,7 +665,7 @@ client.storeIndex(options, function (err, rslt) {
 ```
 
 ```erlang
-riakc_pb_socket:create_search_index(Pid, <<"hobbies">>, <<"_yz_default">>).
+riakc_pb_socket:create_search_index(Pid, <<"hobbies">>, <<"_yz_default">>, []).
 ```
 
 ```curl
@@ -1051,7 +1051,7 @@ client.storeIndex(options, function (err, rslt) {
 ```
 
 ```erlang
-riakc_pb_socket:create_search_index(Pid, <<"customers">>, <<"_yz_default">>).
+riakc_pb_socket:create_search_index(Pid, <<"customers">>, <<"_yz_default">>, []).
 ```
 
 ```curl
