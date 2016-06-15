@@ -25,17 +25,15 @@ canonical_link: "https://docs.basho.com/riak/kv/latest/developing/data-types"
 
 Riak KV 2.0+ introduces Riak-specific data types based on [convergent replicated data types (CRDTs)][wiki crdt]. While Riak KV was built as a data-agnostic key/value store, Riak Data Types enable you to use Riak KV as a _data-aware_ system and perform transactions on 5 CRDT-inspired data types:
 
-- Flags
-- Registers
-- [Counters](#counters)
-- [Sets](#sets)
-- [Maps](#maps)
+- [Flags](./maps#flags)
+- [Registers](./maps#registers)
+- [Counters](./counters)
+- [Sets](./sets)
+- [Maps](./maps)
 
-Counters, Sets, and Maps can be used as bucket-level data types or types that you can interact with directly.
+Counters, Sets, and Maps can be used as bucket-level data types or types that you can interact with directly. Flags and Registers must be [embedded in maps](./maps).
 
-Flags and Registers, however, must be [embedded in maps](#maps).
-
-> For more information on how CRDTs work in Riak KV see [Concepts: Data Types][concept crdt].
+For more information on how CRDTs work in Riak KV see [Concepts: Data Types][concept crdt].
 
 > **Note on counters in earlier versions of Riak**
 >
@@ -56,7 +54,7 @@ In order to use Riak Data Types:
 
 ### Creating a Bucket with a Data Type
 
-you must first create a [bucket type][ops bucket type] that sets the `datatype` bucket parameter to either `counter`, `map`, or `set`.
+First create a [bucket type][ops bucket type] that sets the `datatype` bucket parameter to either `counter`, `map`, or `set`.
 
 The following would create a separate bucket type for each of the three
 bucket-level data types:
@@ -108,36 +106,17 @@ To check whether activation has been successful, simply use the same
 
 Riak Data Types can be searched just like any other object, but with the
 added benefit that your Data Type is indexed as a different type by Solr,
-the search platform undergirding Riak Search.
+the search platform behind Riak Search.
 
 In our Search documentation we offer a [full tutorial](../../usage/searching-data-types) as well as a variety of [examples](../../usage/search/#data-types-and-search-examples), including code
 samples from each of our official client libraries.
 
-## Usage Examples
-
-The examples below show you how to use Riak Data Types at the
-application level using each of Basho's [officially supported Riak clients](../../client-libraries).
-
-All examples will use the bucket type names from above (`counters`, `sets`, and `maps`). You're free to substitute your own bucket type names if you wish.
-
-> **Getting started with Riak clients**
->
-> If you are connecting to Riak using one of Basho's official [client libraries](../../client-libraries), you can find more information about getting started with your client in our [Developing with Riak KV: Getting Started](../../getting-started) section.
-
 ## Data Types and Context
 
 When performing normal key/value updates in Riak, we advise that you use
-[causal context](/riak/kv/2.1.4/learn/concepts/causal-context), which enables Riak to make intelligent decisions
-behind the scenes about which object values should be considered more
-causally recent than others in cases of conflict. In some of the
-examples above, you saw references to **context** metadata included with
-each Data Type stored in Riak.
+[causal context](/riak/kv/2.1.4/learn/concepts/causal-context), which enables Riak to make intelligent decisions behind the scenes about which object values should be considered more causally recent than others in cases of conflict. In some of the examples above, you saw references to **context** metadata included with each Data Type stored in Riak.
 
-Data Type contexts are similar to [causal context](/riak/kv/2.1.4/learn/concepts/causal-context) in that they are
-opaque (i.e. not readable by humans) and also perform a similar function
-to that of causal context, i.e. they inform Riak which version of the
-Data Type a client is attempting to modify. This information is required
-by Riak when making decisions about convergence.
+Data Type contexts are similar to [causal context](/riak/kv/2.1.4/learn/concepts/causal-context) in that they are opaque (not readable by humans) and also perform a similar function to that of causal context, i.e. they inform Riak which version of the Data Type a client is attempting to modify. This information is required by Riak when making decisions about convergence.
 
 In the example below, we'll fetch the context from the user data map we
 created for Ahmed, just to see what it looks like:
@@ -214,14 +193,13 @@ client.fetchMap(options, function (err, rslt) {
 %% manages contexts when making updates.
 ```
 
-<div class="note">
-<div class="title">Context with the Ruby, Python, and Erlang clients</div>
-In the Ruby, Python, and Erlang clients, you will not need to manually
+> **Context with the Ruby, Python, and Erlang clients**
+>
+> In the Ruby, Python, and Erlang clients, you will not need to manually
 handle context when making Data Type updates. The clients will do it all
 for you. The one exception amongst the official clients is the Java
 client. We'll explain how to use Data Type contexts with the Java client
 directly below.
-</div>
 
 #### Context with the Java and PHP Clients
 
@@ -272,3 +250,19 @@ $updateSet = (new \Basho\Riak\Command\Builder\UpdateSet($riak))
     ->execute();
 ```
 
+## Usage Examples
+
+- [Flags](./maps#flags)
+- [Registers](./maps#registers)
+- [Counters](./counters)
+- [Sets](./sets)
+- [Maps](./maps)
+
+The pages listed above show you how to use Riak Data Types at the
+application level using each of Basho's [officially supported Riak clients](../../client-libraries).
+
+All the examples use the bucket type names from above (`counters`, `sets`, and `maps`). You're free to substitute your own bucket type names if you wish.
+
+> **Getting started with Riak clients**
+>
+> If you are connecting to Riak using one of Basho's official [client libraries](../../client-libraries), you can find more information about getting started with your client in our [Developing with Riak KV: Getting Started](../../getting-started) section.

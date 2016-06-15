@@ -19,18 +19,54 @@ aliases:
 canonical_link: "https://docs.basho.com/riak/kv/latest/developing/data-types/maps"
 ---
 
-## Maps
+Maps are the most versatile of the Riak Data Types because all other Data Types can be embedded within them, _including maps themselves_. This enables the creation of complex, custom Data Types from a few basic building blocks.
 
-The map is in many ways the richest of the Riak Data Types because all
-of the other Data Types can be embedded within them, _including maps
-themselves_, to create arbitrarily complex custom Data Types out of a
-few basic building blocks.
+Using counters, sets, and maps within maps are similar to working with those types at the bucket level.
 
-The semantics of dealing with counters, sets, and maps within maps are
-usually very similar to working with those types at the bucket level,
-and so usage is usually very intuitive.
+## Bucket-Type Setup
 
-The general syntax for creating a Riak map is directly analogous to the
+> If you've already created and activated a bucket-type with the `datatype` parameter set to `map` skip to the [next section](#client-setup).
+
+Start by creating a bucket-type with the `datatype` parameter set to `map`:
+
+```bash
+riak-admin bucket-type create maps '{"props":{"datatype":"map"}}'
+```
+
+After creating a bucket with a Riak Data Type, confirm the bucket property configuration associated with that type is correct:
+
+```bash
+riak-admin bucket-type status maps
+```
+
+This returns a list of bucket properties and their values
+in the form of `property: value`.
+
+If our `counters` bucket-type has been set properly we should see the following pair in our console output:
+
+```bash
+datatype: map
+```
+
+Next the bucket-type needs to be activated to be usable in Riak:
+
+```bash
+riak-admin bucket-type activate maps
+```
+
+Check if activation has been successful by using the same
+`bucket-type status` command shown above:
+
+```bash
+riak-admin bucket-type status maps
+```
+
+## Client Setup
+
+First, we need to direct our client to the bucket-type/bucket/key
+location that contains our map.
+
+The syntax for creating a Riak map is directly analogous to the
 syntax for creating other data types:
 
 ```java
@@ -93,11 +129,9 @@ curl http://localhost:8098/types/<bucket_type>/buckets/<bucket>/datatypes/<key>
 # which end in /keys/<key>
 ```
 
-Let's say that we want to use Riak to store information about our
-company's customers. We'll use the bucket `customers` to do so. Each
-customer's data will be contained in its own key in the `customers`
-bucket. Let's create a map for the user Ahmed (`ahmed_info`) (we'll use the
-`maps` bucket type from above):
+For this example, say we want to use Riak KV to store information about our company's customers. We'll use the `maps` bucket-type created and activated previously and a bucket called `customers`. Each customer's data will be contained in its own key in the `customers` bucket.
+
+We can create a map for the user Ahmed (`ahmed_info`) using the `maps` bucket-type:
 
 ```java
 // In the Java client, you specify the location of Data Types
@@ -162,14 +196,17 @@ Map = riakc_map:new().
 # be created when a field is added to them, as in the examples below.
 ```
 
-### Registers and Flags
+## Registers
 
-Registers and flags cannot be used on their own in Riak. You cannot use
-a bucket/key pair as a register or flag directly.
+Registers are essentially named binaries (like strings). Any binary
+value can act as the value of a register. Like flags, registers cannot
+be used on their own and must be embedded in Riak maps.
 
-#### Registers Within Maps
+## Registers Within Maps
 
-The first piece of info we want to store in our map is Ahmed's name and
+Continuing with our previous `customers` example, let's store some information in our map.
+
+The first piece of information we want to store in our map is Ahmed's name and
 phone number, both of which are best stored as registers:
 
 ```java
@@ -289,10 +326,16 @@ curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_i
   }'
 ```
 
-This will work even though registers `first_name` and `phone_number` did
-not previously exist, as Riak will create those registers for you.
+If a register did not previously exist, Riak KV will create that register for you.
 
-#### Flags Within Maps
+## Flags
+
+Flags behave much like Boolean values, except that instead of `true` or
+`false` flags have the values `enable` or `disable`.
+
+Flags cannot be used on their own, i.e. a flag cannot be stored in a bucket/key by itself. Instead, flags can only be stored within maps.
+
+## Flags Within Maps
 
 Now let's say that we add an Enterprise plan to our pricing model. We'll
 create an `enterprise_customer` flag to track whether Ahmed has signed
@@ -447,7 +490,7 @@ riakc_map:dirty_value(Map4).
 curl http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info
 ```
 
-#### Counters Within Maps
+## Counters Within Maps
 
 We also want to know how many times Ahmed has visited our website. We'll
 use a `page_visits` counter for that and run the following operation
@@ -544,7 +587,7 @@ Even though the `page_visits` counter did not exist previously, the
 above operation will create it (with a default starting point of 0) and
 the increment operation will bump the counter up to 1.
 
-#### Sets Within Maps
+## Sets Within Maps
 
 We'd also like to know what Ahmed's interests are so that we can better
 design a user experience for him. Through his purchasing decisions, we
@@ -858,7 +901,7 @@ curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_i
   '
 ```
 
-#### Maps Within Maps (Within Maps?)
+## Maps Within Maps
 
 We've stored a wide of variety of information---of a wide variety of
 types---within the `ahmed_info` map thus far, but we have yet to explore

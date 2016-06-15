@@ -19,17 +19,55 @@ aliases:
 canonical_link: "https://docs.basho.com/riak/kv/latest/developing/data-types/counters"
 ---
 
-Counters are a bucket-level Riak Data Type that can be used either by
-themselves, i.e. associated with a bucket/key pair, or [within a map](../../maps).
+Counters are a bucket-level Riak Data Type that can be used by
+themselves; associated with a bucket/key pair, or [within a map](../../maps#counters-within-maps). A counter's value can only be a positive integer, negative integer, or zero.
 
 The examples in this section will show you how to use counters on their own.
 
-## Specify the Counter's Location
+## Bucket-Type Setup
 
-First, we need to point our client to the bucket type/bucket/key
-location that will house our counter. We'll keep it simple and use the
-`counters` bucket type created and activated above and a bucket called
-`counters`.
+> If you've already created and activated a bucket-type with the `datatype` parameter set to `counter` skip to the [next section](#client-setup).
+
+Start by creating a bucket-type with the `datatype` parameter set to `counter`:
+
+```bash
+riak-admin bucket-type create counters '{"props":{"datatype":"counter"}}'
+```
+
+After creating a bucket with a Riak Data Type, confirm the bucket property configuration associated with that type is correct:
+
+```bash
+riak-admin bucket-type status counters
+```
+
+This returns a list of bucket properties and their values
+in the form of `property: value`.
+
+If our `counters` bucket-type has been set properly we should see the following pair in our console output:
+
+```
+datatype: counter
+```
+
+Next the bucket-type needs to be activated to be usable in Riak:
+
+```bash
+riak-admin bucket-type activate counters
+```
+
+Check if activation has been successful by using the same
+`bucket-type status` command shown above:
+
+```bash
+riak-admin bucket-type status counters
+```
+
+## Client Setup
+
+First, we need to direct our client to the bucket-type/bucket/key
+location that contains our counter.
+
+For this example we'll use the `counters` bucket-type created and activated above and a bucket called `counters`:
 
 ```java
 // In the Java client, a bucket/bucket type combination is specified
@@ -89,7 +127,7 @@ curl http://localhost:8098/types/counters/buckets/counters/datatypes/<key>
 # requests, which end in /keys/<key>
 ```
 
-## Creating a Counter
+## Create a Counter
 
 To create a counter, you need to specify a bucket/key pair to hold that
 counter. Here is the general syntax for doing so:
@@ -236,7 +274,7 @@ curl -XPOST http://localhost:8098/types/counters/buckets/counters/datatypes/traf
 
 Now that our client knows which bucket/key pairing to use for our
 counter, `traffic_tickets` will start out at 0 by default. If we happen
-to get a ticket that afternoon, we would need to increment the counter:
+to get a ticket that afternoon, we can increment the counter:
 
 ```java
 // Using the "trafficTickets" Location from above:
@@ -312,12 +350,12 @@ curl -XPOST http://localhost:8098/types/counters/buckets/counters/datatypes/traf
   -d '{"increment": 1}'
 ```
 
-## Increment a Counter 2
+## Increment a Counter by More Than 1
 
 The default value of an increment operation is 1, but you can increment
-by more than one if you'd like (but always by an integer). Let's say
-that we decide to spend an afternoon flaunting traffic laws and manage
-to rack up five tickets:
+by more than 1 (but always by an integer).
+
+Continuing with our `traffic_tickets` example, let's say we receive 5 tickets in a single day:
 
 ```java
 // Using the "trafficTickets" Location from above:
@@ -397,8 +435,7 @@ curl -XPOST http://localhost:8098/types/counters/buckets/counters/datatypes/traf
 
 ## Retrieve Counter Value
 
-If we're curious about how many tickets we have accumulated, we can
-simply retrieve the value of the counter at any time:
+We can retrieve the value of the counter and view how many tickets have accumulated:
 
 ```java
 // Using the "trafficTickets" Location from above:
@@ -502,10 +539,9 @@ curl http://localhost:8098/types/counters/buckets/counters/datatypes/traffic_tic
 
 ## Decrement a Counter
 
-For a counter to be useful, you need to be able to decrement it in
-addition to incrementing it. Riak counters enable you to do precisely
-that. Let's say that we hire an expert lawyer who manages to get one of
-our traffic tickets stricken from our record:
+Counters enable you to decrement values in addition to incrementing them as seen above.
+
+For example, let's say we hire an expert lawyer who gets one of the traffic tickets stricken from our record:
 
 ```java
 // Using the "trafficTickets" Location from above:

@@ -19,9 +19,55 @@ aliases:
 canonical_link: "https://docs.basho.com/riak/kv/latest/developing/data-types/sets"
 ---
 
-As with counters (and maps, as shown below), using sets involves setting
-up a bucket/key pair to house a set and running set-specific operations
-on that pair.
+Sets are a bucket-level Riak Data Type that can be used by
+themselves; associated with a bucket/key pair, or [within a map](../../maps#sets-within-maps).
+
+Sets are collections of unique binary values (such as strings). All of
+the values in a set are unique.
+
+For example, if you attempt to add the element `shovel` to a set that already contains `shovel`, the operation will be ignored by Riak.
+
+## Bucket-Type Setup
+
+> If you've already created and activated a bucket-type with the `datatype` parameter set to `set` skip to the [next section](#client-setup).
+
+Start by creating a bucket-type with the `datatype` parameter set to `set`:
+
+```bash
+riak-admin bucket-type create sets '{"props":{"datatype":"set"}}'
+```
+
+After creating a bucket with a Riak Data Type, confirm the bucket property configuration associated with that type is correct:
+
+```bash
+riak-admin bucket-type status sets
+```
+
+This returns a list of bucket properties and their values
+in the form of `property: value`.
+
+If our `sets` bucket-type has been set properly we should see the following pair in our console output:
+
+```
+datatype: set
+```
+
+Next the bucket-type needs to be activated to be usable in Riak:
+
+```bash
+riak-admin bucket-type activate sets
+```
+
+Check if activation has been successful by using the same
+`bucket-type status` command shown above:
+
+```bash
+riak-admin bucket-type status sets
+```
+
+## Client Setup
+
+Using sets involves setting up a bucket/key pair to house a set and running set-specific operations on that pair.
 
 Here is the general syntax for setting up a bucket type/bucket/key
 combination to handle a set:
@@ -111,10 +157,10 @@ curl http://localhost:8098/types/<bucket_type>/buckets/<bucket>/datatypes/<key>
 # which end in /keys/<key>
 ```
 
-Let's say that we want to use a set to store a list of cities that we
-want to visit. Let's create a Riak set stored in the key `cities` in the
-bucket `travel` (using the `sets` bucket type we created in the previous
-section):
+## Create a Set
+
+For the following example, we will use a set to store a list of cities that we
+want to visit. Let's create a Riak set stored in the key `cities` in the bucket `travel` using the `sets` bucket-type created previously:
 
 ```java
 // In the Java client, you specify the location of Data Types
@@ -271,6 +317,8 @@ curl http://localhost:8098/types/sets/buckets/travel/datatypes/cities
 not found
 ```
 
+## Add to a Set
+
 But let's say that we read a travel brochure saying that Toronto and
 Montreal are nice places to go. Let's add them to our `cities` set:
 
@@ -357,6 +405,8 @@ curl -XPOST http://localhost:8098/types/sets/buckets/travel/datatypes/cities \
   -H "Content-Type: application/json" \
   -d '{"add_all":["Toronto", "Montreal"]}'
 ```
+
+## Remove from a Set
 
 Later on, we hear that Hamilton and Ottawa are nice cities to visit in
 Canada, but if we visit them, we won't have time to visit Montreal, so
@@ -481,6 +531,8 @@ curl -XPOST http://localhost:8098/types/sets/buckets/travel/datatypes/cities \
   -d '{"remove": "Montreal","add_all":["Hamilton", "Ottawa"]}'
 ```
 
+## Retrieve a Set
+
 Now, we can check on which cities are currently in our set:
 
 ```java
@@ -593,6 +645,8 @@ curl http://localhost:8098/types/sets/buckets/travel/datatypes/cities?include_co
 {"type":"set","value":["Hamilton", "Ottawa", "Toronto"]}
 ```
 
+## Find Set member
+
 Or we can see whether our set includes a specific member:
 
 ```java
@@ -653,6 +707,8 @@ riakc_set:is_element(<<"Ottawa">>, CitiesSet5).
 # With the HTTP interface, this can be determined from the output of
 # a fetch command like the one displayed in the example above
 ```
+
+## Size of Set
 
 We can also determine the size of the set:
 
