@@ -102,9 +102,19 @@ riak-admin bucket-type activate maps
 To check whether activation has been successful, simply use the same
 `bucket-type status` command shown above.
 
+## Required Bucket Properties
+
+In order for Riak Data Types to work the bucket should have the following bucket properties:
+
+- `allow_mult = true`
+- `last_write_wins = false`
+
+These settings are set by default and should not be changed.
+
+
 ## Data Types and Search
 
-Riak Data Types can be searched just like any other object, but with the
+Riak Data Types can be searched like any other object, but with the
 added benefit that your Data Type is indexed as a different type by Solr,
 the search platform behind Riak Search.
 
@@ -113,13 +123,16 @@ samples from each of our official client libraries.
 
 ## Data Types and Context
 
-When performing normal key/value updates in Riak, we advise that you use
-[causal context](/riak/kv/2.1.4/learn/concepts/causal-context), which enables Riak to make intelligent decisions behind the scenes about which object values should be considered more causally recent than others in cases of conflict. In some of the examples above, you saw references to **context** metadata included with each Data Type stored in Riak.
+When performing normal key/value updates in Riak KV, we recommend using
+[causal context](/riak/kv/2.1.4/learn/concepts/causal-context). This enables Riak KV to make decisions about which object values should be considered more causally recent than others in cases of conflict.
 
-Data Type contexts are similar to [causal context](/riak/kv/2.1.4/learn/concepts/causal-context) in that they are opaque (not readable by humans) and also perform a similar function to that of causal context, i.e. they inform Riak which version of the Data Type a client is attempting to modify. This information is required by Riak when making decisions about convergence.
+Data Type contexts are similar to [causal context](/riak/kv/2.1.4/learn/concepts/causal-context) in that they are opaque (not readable by humans). They also perform a similar function to that of causal context; informing Riak KV which version of the Data Type a client is attempting to modify. This information is required by Riak KV when making decisions about convergence.
 
-In the example below, we'll fetch the context from the user data map we
-created for Ahmed, just to see what it looks like:
+> **Note**
+>
+> Counters do not use context; Riak KV will return an empty value.
+
+In the example below we'll fetch the context [from a user data map created for Ahmed](./maps#create-a-map):
 
 ```java
 // Using the "ahmedMap" Location from above:

@@ -66,7 +66,7 @@ riak-admin bucket-type status maps
 First, we need to direct our client to the bucket-type/bucket/key
 location that contains our map.
 
-The syntax for creating a Riak map is directly analogous to the
+The syntax for creating a Riak map is analogous to the
 syntax for creating other data types:
 
 ```java
@@ -128,6 +128,8 @@ curl http://localhost:8098/types/<bucket_type>/buckets/<bucket>/datatypes/<key>
 # Note that this differs from the URL structure for non-Data Type requests,
 # which end in /keys/<key>
 ```
+
+## Create a Map
 
 For this example, say we want to use Riak KV to store information about our company's customers. We'll use the `maps` bucket-type created and activated previously and a bucket called `customers`. Each customer's data will be contained in its own key in the `customers` bucket.
 
