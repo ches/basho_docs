@@ -1,0 +1,78 @@
+<!-- Site-wide Variables for Project Pages
+     =====================================
+  Because of the way Go templates (and therefor Hugo) deal with scope, we're
+  going to extract and define a number of common variables here and save them in
+  the global `.Scratch` dictionary. This will allow us to extract common
+  variables across partial templates from a single canonical source.
+
+  Note that the below definitions makes assumptions about the Front Matter
+  provided by the markdown content being rendered. Please see the
+  CONTRIBUTING.md document for details on the Front Matter required for a well-
+  formed project page.
+
+
+{{ $project        := .Params.project         }} {{/* ex; riak_kv */}}
+{{ $version        := .Params.project_version }} {{/* ex; 2.1.4   */}}
+{{ $canonical_link := .Params.canonical_link  }} {{/* ex; https://docs.basho.com/riak/kv/latest/introduction/ */}}
+
+{{ $title_supertext := .Params.title_supertext }} {{/* ex; Introduction to */}}
+{{ $title           := .Title                  }} {{/* ex; Riak KV 2.0     */}}
+
+
+{{ $project_decription := (index .Site.Params.project_descriptions $project) }}
+
+{{ $latest_version     := $project_decription.latest              }} {{/* ex; 2.1.4         */}}
+{{ $is_latest          := (eq $version $latest_version)           }} {{/* ex; true          */}}
+{{ $lts_version        := $project_decription.lts                 }} {{/* ex; 2.0.6         */}}
+{{ $is_lts             := (eq $version $lts_version)              }} {{/* ex; false         */}}
+{{ $project_path       := $project_decription.path                }} {{/* ex; riak/kv       */}}
+{{ $version_path       := (printf "%s/%s" $project_path $version) }} {{/* ex; riak/kv/2.1.4 */}}
+{{ $releases           := $project_decription.releases            }} {{/* ex; [[2.0.0, 2.0.1, ...], [2.1.0, 2.1.2, ...]] */}}
+{{ $archived_url       := $project_decription.archived_url        }} {{/* ex; http://docs.basho.com/riak/1.4.12/         */}}
+
+{{ $site_relative_url    := (replace .Permalink .Site.BaseURL "") }}                        {{/* ex; riak/kv/2.1.4/introduction/ */}}
+{{ $project_relative_url := (replace $site_relative_url (printf "%s/" $version_path) "") }} {{/* ex; introduction/               */}}
+
+
+
+{{ .Scratch.Add "project"              $project              }}
+{{ .Scratch.Add "version"              $version              }}
+{{ .Scratch.Add "canonical_link"       $canonical_link       }}
+{{ .Scratch.Add "title_supertext"      $title_supertext      }}
+{{ .Scratch.Add "title"                $title                }}
+{{ .Scratch.Add "latest_version"       $latest_version       }}
+{{ .Scratch.Add "is_latest"            $is_latest            }}
+{{ .Scratch.Add "lts_version"          $lts_version          }}
+{{ .Scratch.Add "is_lts"               $is_lts               }}
+{{ .Scratch.Add "project_path"         $project_path         }}
+{{ .Scratch.Add "version_path"         $version_path         }}
+{{ .Scratch.Add "releases"             $releases             }}
+{{ .Scratch.Add "archived_url"         $archived_url         }}
+{{ .Scratch.Add "site_relative_url"    $site_relative_url    }}
+{{ .Scratch.Add "project_relative_url" $project_relative_url }}
+
+
+{{/* Optional Variables w/ Defaults
+     ==============================
+  Mostly, we can just use `{{ if $project_variable }}` for existence checks.
+  The below project variables are to be assigned default values though, so
+  the existence check is more complex, and will be performed here.
+*/}}
+
+{{ $toc_is_set                 := isset .Params "toc"                 }}
+{{ $commercial_offering_is_set := isset .Params "commercial_offering" }}
+
+{{ if $toc_is_set }}
+  {{ .Scratch.Add "toc" .Params.toc }}
+{{ else           }}
+  {{/* Default to true */}}
+  {{ .Scratch.Add "toc" true }}
+{{ end            }}
+
+{{ if $commercial_offering_is_set }}
+  {{ .Scratch.Add "commercial_offering" .Params.commercial_offering }}
+{{ else                           }}
+  {{/* Default to false */}}
+  {{ .Scratch.Add "commercial_offering" false }}
+{{ end                            }}
+-->

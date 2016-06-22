@@ -1,27 +1,49 @@
 <!DOCTYPE html>
 
-<!-- Site-wide and Page-wide Variables
-     ---------------------------------
-  We pull in "common_variables.html" to define a whole bunch of common variables
-  in the `.Scratch` object, and selectively extract the ones we want to use
-  below.
+<!-- Note on Template Design
+     =======================
+  All Hugo Template blocks are going to be wrapped in these multi-line HTML
+  comments so the compiled source might be a bit prettier to look at; if
+  unwrapped, every Go call will get its own newline, and add an incredible
+  amount of padding to the source.
+-->
 
-{{ partial "common_variables.html" . }}
+{{ safeHTML `
+<!-- Note on Comments
+     ================
+  Hugo's processing logic will strip HTML comments out of the rendered HTML,
+  unless they are wrapped in a 'safeHTML' call, as this comment is. Please note
+  that we use Go Raw Strings (wrapped in backticks, rather than single-quotes)
+  for the "comment" s.t. we capture newlines correctly. As such, backticks
+  cannot be used in preserved comments.
+-->` }}
 
-{{ $project             := .Scratch.Get "project"             }}
-{{ $project_path        := .Scratch.Get "project_path"        }}
-{{ $version             := .Scratch.Get "version"             }}
-{{ $is_latest           := .Scratch.Get "is_latest"           }}
-{{ $is_lts              := .Scratch.Get "is_lts"              }}
-{{ $toc                 := .Scratch.Get "toc"                 }}
-{{ $commercial_offering := .Scratch.Get "commercial_offering" }}
+<!-- Variable Definitions
+     ====================
+  We start this template with the "project_variables.html" partial to pre-define
+  common variables in the `.Scratch` object.
 
-{{ $title           := .Title                             }}
-{{ $title_supertext := .Params.title_supertext            }}
-{{ $menu_title      := (printf "%s-%s" $project $version) }}
+  For every new partial, we define a $HugoNode local variable that will be the
+  top-level global context (the Hugo Node Object) s.t. we always have a
+  consistent method of querying the Hugo Node object that will not change in
+  Partials or Ranges.
 
-{{/*TODO: Figure out if I can be rid of this. */}}
-{{ $has_supertext   := isset .Params "title_supertext"    }}
+  For each Template / Partial / Range entered, we then selectively extract
+  specific variables from the Scratch dictionary that we're going to use.
+
+
+{{ partial "sandbox/project_variables.html" . }}
+
+{{ $HugoNode := . }}
+
+{{ $project             := $HugoNode.Scratch.Get "project"             }}
+{{ $version             := $HugoNode.Scratch.Get "version"             }}
+{{ $is_latest           := $HugoNode.Scratch.Get "is_latest"           }}
+{{ $is_lts              := $HugoNode.Scratch.Get "is_lts"              }}
+{{ $title_supertext     := $HugoNode.Scratch.Get "title_supertext"     }}
+{{ $title               := $HugoNode.Scratch.Get "title"               }}
+{{ $commercial_offering := $HugoNode.Scratch.Get "commercial_offering" }}
+{{ $toc                 := $HugoNode.Scratch.Get "toc"                 }}
 -->
 
 
@@ -29,20 +51,29 @@
 <html class="no-js" lang="en">
 
 <!-- =========================================================================================== -->
-{{/* {{ partial "head.html" . }}                                                                */}}
+{{/* {{ partial "head.html" $HugoNode }}                                                        */}}
 <!-- =========================================================================================== -->
+<!-- Variable Definitions
+     ====================
+{{ $HugoNode := . }}
+
+{{ $canonical_link := $HugoNode.Scratch.Get "canonical_link" }}
+{{ $project        := $HugoNode.Scratch.Get "project"        }}
+{{ $version        := $HugoNode.Scratch.Get "version"        }}
+{{ $title          := $HugoNode.Scratch.Get "title"          }}
+-->
 
 <head>
   <meta charset="utf-8">
 
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-  <link rel="canonical" href="{{ .Params.canonical_link }}">
+  <link rel="canonical" href="{{$canonical_link}}">
 
   <meta name="viewport" content="width=device-width">
-  <meta name="project" content="{{ $project }}">
-  <meta name="version" content="{{ $version }}">
+  <meta name="project" content="{{$project}}">
+  <meta name="version" content="{{$version}}">
 
-  <title>{{ $title }}</title>
+  <title>{{$title}}</title>
 
   <script type="text/javascript" src="/js/sandbox_head.js"></script>
 
@@ -68,7 +99,7 @@
 </head>
 
 <!-- =========================================================================================== -->
-{{/* END {{ partial "head.html" . }}                                                            */}}
+{{/* END {{ partial "head.html" $HugoNode }}                                                    */}}
 <!-- =========================================================================================== -->
 
 
@@ -76,7 +107,7 @@
 <body class="{{$project}} {{$version}} {{if $is_latest}}latest{{end}} {{if $is_lts}}lts{{end}}">
 
 <!-- =========================================================================================== -->
-{{/* {{ partial "google_tag_manager.html" . }}                                                  */}}
+{{/* {{ partial "google_tag_manager.html" $HugoNode }}                                          */}}
 <!-- =========================================================================================== -->
 
 {{/*
@@ -98,40 +129,86 @@
 */}}
 
 <!-- =========================================================================================== -->
-{{/* END {{ partial "google_tag_manager.html" . }}                                              */}}
+{{/* END {{ partial "google_tag_manager.html" $HugoNode }}                                      */}}
 <!-- =========================================================================================== -->
 
 
 
 <!-- =========================================================================================== -->
-{{/* {{ partial "navigation_sidebar.html" (dict "context" . "menu_title" $menu_title) }}        */}}
+{{/* {{ partial "navigation_sidebar.html" $HugoNode }}                                          */}}
 <!-- =========================================================================================== -->
+<!-- Variable Definitions
+     ====================
+{{ $HugoNode := . }}
+
+{{ $project      := $HugoNode.Scratch.Get "project"      }}
+{{ $version      := $HugoNode.Scratch.Get "version"      }}
+{{ $project_path := $HugoNode.Scratch.Get "project_path" }}
+{{ $is_latest    := $HugoNode.Scratch.Get "is_latest"    }}
+{{ $is_lts       := $HugoNode.Scratch.Get "is_lts"       }}
+
+{{ $menu_title := (printf "%s-%s" $project $version)       }} {{/* ex; riak_kv-2.1.4 */}}
+{{ $menu_list  := (index $HugoNode.Site.Menus $menu_title) }} {{/* Hugo List of Menu Objects */}}
+-->
 
   <nav class="navigation">
 
     <div class="navigation__fixed-top">
 
       <form class="clearfix" id="searchbox_011972015458788978446:zgdcy4fa-o0" action="" role="search">
-        <div class="float-left   navigation__icon-container"><span class="icon-search"></span></div>
-        <div class="float-left   navigation__separator"></div>
-        <input class="navigation__search" type="search" name="q" placeholder="Search">
+        <div class="navigation__search-container">
+          <div class="float-left   navigation__icon-container"><span class="docs-icon--search"></span></div>
+          <div class="float-left   navigation__separator"></div>
+          <input class="navigation__search-input" type="search" name="q" placeholder="Search">
+        </div>
       </form>
 
     </div>
 
 
 
-  <!-- ========================================================================================= -->
-  {{/* {{ partial "navigation_menu.html" . }}                                                   */}}
-  <!-- ========================================================================================= -->
+    <ul class="navigation-menu--depth-0">
+{{ range $menu_item := $menu_list }}
+  <!-- Range-Specific Variable Definitions
+       ===================================
+  {{ $menu_is_selected       := ($HugoNode.IsMenuCurrent  $menu_title $menu_item) }}
+  {{ $menu_contains_selected := ($HugoNode.HasMenuCurrent $menu_title $menu_item) }}
+  {{ $menu_is_open           := (or $menu_is_selected $menu_contains_selected)    }}
+  {{ $menu_has_children      := $menu_item.HasChildren                            }}
+  {{ $menu_pre_item          := $menu_item.Pre                                    }} {{/* ex; docs-icon--lambda */}}
+  {{ $menu_name              := $menu_item.Name                                   }}
+  {{ $menu_url               := $menu_item.URL                                    }}
+  -->
+      <li>
 
-    <ul class="navigation__menu--depth-0">
+        <div class="navigation-menu__item
+                    {{if $menu_has_children}}navigation-menu__item--with-toggle{{end}}
+                    {{if $menu_is_selected}} navigation-menu__item--selected{{end}}">
+          <!--TODO: See about cleaning up div vs span in these elements -->
+          <div class="float-left   navigation__icon-container"><span class="{{$menu_pre_item}}"></span>&nbsp;</div>
+          <div class="float-left   navigation__separator"></div>
+  {{ if $menu_has_children }}
+          <span class="float-right   navigation-menu__toggle-buffer">&nbsp;</span>
+          <span class="float-right   navigation-menu__toggle
+                                     {{if $menu_is_open}}navigation-menu__toggle--open{{end}}"></span>
+  {{ end }}
+          <a class="block overflow   navigation-menu__title
+                                     {{if $menu_has_children}}navigation-menu__title--toggle-border{{end}}"
+             href="{{$menu_url}}">
+                                     <!--TODO: Try not to use this toggle-border modifier? -->
+            {{$menu_name}}
+          </a>
+        </div>
 
+  {{/*
+  {{ if $menu_has_children }}
+    <ul class="navigation-menu--depth-0">
     </ul>
-
-  <!-- ========================================================================================= -->
-  {{/* END {{ partial "navigation_menu.html" . }}                                               */}}
-  <!-- ========================================================================================= -->
+  {{ end                   }}
+  */}}
+      </li>
+{{ end }}
+    </ul>
 
 
 
@@ -139,7 +216,7 @@
 
       <li>
         <a class="clearfix" href="https://github.com/basho/basho_docs" target="_blank">
-          <div class="float-left   navigation__icon"><span class="icon-github-alt"></span></div>
+          <div class="float-left   navigation__icon"><span class="docs-icon--github-alt"></span></div>
           <div class="float-left   navigation__separator"></div>
           Available on GitHub
           <!--TODO: Can we have the text first, then the floaty stuff? Should we? -->
@@ -147,8 +224,8 @@
       </li>
 
       <li>
-        <a class="clearfix" href="/riak/latest/community/">
-          <div class="float-left   navigation__icon"><span class="icon-question-sign"></span></div>
+        <a class="clearfix" href="/community/">
+          <div class="float-left   navigation__icon"><span class="docs-icon--question-sign"></span></div>
           <div class="float-left   navigation__separator"></div>
           Get Help
         </a>
@@ -159,25 +236,41 @@
   </nav>
 
 <!-- =========================================================================================== -->
-{{/* END {{ partial "navigation_sidebar.html" . . . }}                                          */}}
+{{/* END {{ partial "navigation_sidebar.html" $HugoNode }}                                      */}}
 <!-- =========================================================================================== -->
 
 
 
 <!-- =========================================================================================== -->
-{{/* {{ partial "banner.html" . }}                                                              */}}
+{{/* {{ partial "banner.html" $HugoNode }}                                                      */}}
 <!-- =========================================================================================== -->
+<!-- Variable Definitions
+     ====================
+{{ $HugoNode := . }}
+
+{{ $project_path := $HugoNode.Scratch.Get "project_path" }}
+{{ $version      := $HugoNode.Scratch.Get "version"      }}
+-->
 
   <header class="banner">
 
+
+
   <!-- ========================================================================================= -->
-  {{/* {{ partial "version-selector.html" . }}                                                  */}}
+  {{/* {{ partial "version-selector.html" $HugoNode }}                                          */}}
   <!-- ========================================================================================= -->
+<!-- Variable Definitions
+     ====================
+{{ $HugoNode := . }}
+
+{{ $version := $HugoNode.Scratch.Get "version" }}
+TODO: Other stuff.
+-->
 
     <div class="version-selector">
 
       <header class="version-selector__title">VERSIONS</header>
-      <button class="version-selector__btn" type="button">{{ $version }}</button>
+      <button class="version-selector__btn" type="button">{{$version}}</button>
       <div    class="version-selector__arrow"></div>
 
       <ul class="version-selector__list" hidden>
@@ -186,23 +279,23 @@
     </div>
 
   <!-- ========================================================================================= -->
-  {{/* END {{ partial "version-selector.html" . }}                                              */}}
+  {{/* END {{ partial "version-selector.html" $HugoNode }}                                      */}}
   <!-- ========================================================================================= -->
+
 
 
     <div class="docs-logo">
       <a href="/index.html"><img class="docs-logo__image" src="/images/layout/basho_docs_logo.png"></a>
     </div>
 
-{{/* if $project_path */}}
-{{/* if $.Scratch.Get "project_path" */}}
+{{ if $project_path }}
     <div class="downloads-btn">
       <a href="/{{$project_path}}/{{$version}}/downloads/">
-        <span class="icon-download-alt"></span>
+        <span class="docs-icon--download-alt"></span>
         Downloads
       </a>
     </div>
-{{/* end */}}
+{{ end              }}
 
     <div class="clear"></div><!-- Find out if this is necessary -->
 
@@ -211,7 +304,7 @@
   </header>
 
 <!-- =========================================================================================== -->
-{{/* END {{ partial "banner.html" . }}                                                          */}}
+{{/* END {{ partial "banner.html" $HugoNode }}                                                  */}}
 <!-- =========================================================================================== -->
 
 
@@ -225,20 +318,18 @@
     <header class="front-matter">
 
       <div>
-{{ if $has_supertext }}
-{{/* if $title_supertext */}}
-        <h1 class="front-matter__title--supertext">{{ $title_supertext }}</h1>
-        <!--TODO: Move the supertext check & value into common.html -->
-{{ end }}
-        <h1 class="front-matter__title">{{ $title }}</h1>
+{{ if $title_supertext }}
+        <h1 class="front-matter__title front-matter__title--supertext">{{$title_supertext}}</h1>
+{{ end                 }}
+        <h1 class="front-matter__title">{{$title}}</h1>
       </div>
 
-{{/* if $commercial_offering */}}
+{{ if $commercial_offering }}
       <div class="enterprise-only-flag" role="note">
         This document applies only to Riak Enterprise, Basho's
         <a href="http://info.basho.com/Wiki_Riak_Enterprise_Request.html">commercial offering</a>.
       </div>
-{{/* end */}}
+{{ end                     }}
 
 {{ if $toc }}
       <!--TODO: Look into using Hugo's ToCs instead of our own? -->
@@ -249,14 +340,14 @@
           <ol class="table-of-contents__items js-toc-items"></ol>
         </div>
       </nav>
-{{ end }}
+{{ end     }}
 
     </header>
 
 
 
     <main>
-      {{ .Content }}
+      {{$HugoNode.Content}}
     </main>
 
 
@@ -272,7 +363,7 @@
 
 
 <!-- =========================================================================================== -->
-{{/* {{ partial "footer.html" . }}                                                              */}}
+{{/* {{ partial "footer.html" $HugoNode }}                                                      */}}
 <!-- =========================================================================================== -->
 
   <footer>
@@ -296,13 +387,13 @@
   </footer>
 
 <!-- =========================================================================================== -->
-{{/* END {{ partial "footer.html" . }}                                                          */}}
+{{/* END {{ partial "footer.html" $HugoNode }}                                                  */}}
 <!-- =========================================================================================== -->
 
 
 
 <!-- =========================================================================================== -->
-{{/* {{ partial "scripts.html" . }}                                                             */}}
+{{/* {{ partial "scripts.html" $HugoNode }}                                                     */}}
 <!-- =========================================================================================== -->
 
   <script type="text/javascript" src="/js/sandbox.js"></script>
@@ -344,7 +435,7 @@
   <!-- END Google Search Pixel -->
 
 <!-- =========================================================================================== -->
-{{/* END {{ partial "scripts.html" . }}                                                         */}}
+{{/* END {{ partial "scripts.html" $HugoNode }}                                                 */}}
 <!-- =========================================================================================== -->
 
 </body>
